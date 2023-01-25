@@ -1,25 +1,31 @@
+// const e = require("express");
 const express = require("express");
+const db = require("../../db/db");
+const { httpError, tryCatchWrapper } = require("../../helpers/index");
+const {
+  getContacts,
+  getContactById,
+  createContact,
+  deleteContact,
+  updateContact,
+} = require("../../controllers/contacts.controller");
+const { validateBody } = require("../../middlewares/index");
+const { addContactSchema } = require("../../schemas/contacts");
 
 const router = express.Router();
 
-router.get("/", async (req, res, next) => {
-  res.json({ message: "Homework done!" });
-});
-
-router.get("/:contactId", async (req, res, next) => {
-  res.json({ message: "template message" });
-});
-
-router.post("/", async (req, res, next) => {
-  res.json({ message: "template message" });
-});
-
-router.delete("/:contactId", async (req, res, next) => {
-  res.json({ message: "template message" });
-});
-
-router.put("/:contactId", async (req, res, next) => {
-  res.json({ message: "template message" });
-});
+router.get("/", tryCatchWrapper(getContacts));
+router.get("/:contactId", tryCatchWrapper(getContactById));
+router.post(
+  "/",
+  validateBody(addContactSchema),
+  tryCatchWrapper(createContact)
+);
+router.delete("/:contactId", tryCatchWrapper(deleteContact));
+router.put(
+  "/:contactId",
+  validateBody(addContactSchema),
+  tryCatchWrapper(updateContact)
+);
 
 module.exports = router;
