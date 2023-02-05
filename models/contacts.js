@@ -18,6 +18,10 @@ const schema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
   },
   {
     versionKey: false,
@@ -28,21 +32,6 @@ const schema = mongoose.Schema(
 //Model (Class)
 const Contact = mongoose.model("contacts", schema);
 
-const listContacts = async () => {};
-
-const getContactById = async (contactId) => {};
-
-const removeContact = async (contactId) => {};
-
-const addContact = async (body) => {};
-
-const updateContact = async (contactId, body) => {};
-
 module.exports = {
   Contact,
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  updateContact,
 };
