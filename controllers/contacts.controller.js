@@ -3,7 +3,9 @@ const { Contact } = require("../models/contacts");
 
 //GET ALL CONTACTS
 async function getContacts(req, res, next) {
-  const contactsList = await Contact.find({});
+  const { page, limit } = req.query;
+  const skip = (page - 1) * limit;
+  const contactsList = await Contact.find({}).skip(skip).limit(limit);
   res.status(200).json(contactsList);
 }
 
@@ -64,10 +66,3 @@ module.exports = {
   deleteContact,
   updateContact,
 };
-
-// name;
-// ("Peeter Pen");
-// email;
-// ("peeterpenie7@mail.com");
-// phone;
-// ("7771238333");
