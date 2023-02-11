@@ -1,5 +1,5 @@
 const { User } = require("../models/user");
-const { httpError } = require("../helpers/index");
+const { httpError, sendVerificationEmail } = require("../helpers/index");
 const path = require("path");
 const fs = require("fs/promises");
 const Jimp = require("jimp");
@@ -65,8 +65,57 @@ async function uploadAvatar(req, res, next) {
   });
 }
 
+async function verifyEmail(req, res, next) {
+  const { verificationToken } = req.params;
+  const user = await User.findOne({
+    verificationToken: verificationToken,
+  });
+
+  if (!user) {
+    throw httpError(404, "User not found");
+  }
+
+  await User.findByIdAndUpdate(user._id, {
+    verify: true,
+    verificationToken: null,
+  });
+
+  return res.status(200).json({ message: "Verification successful" });
+}
+
+async function repeatVerification(req, res, next) {
+  const { email } = req.body;
+  const { verificationToken } = req;
+
+  const user = await User.findOne({
+    email: email,
+  });
+
+  if (!user) {
+    throw httpError(400, "Missing required field email");
+  }
+
+  const userWithToken = await User.findByIdAndUpdate(user, verificationToken);
+
+  if (!userWithToken.verificationToken) {
+    throw httpError(400, "Verification has already been passed");
+  }
+
+  await sendVerificationEmail({
+    to: email,
+    subject: "Please confirm your email",
+    html: `<a href="localhost:3000/api/users/verify/${userWithToken.verificationToken}">Confirm your email</a>`,
+  });
+
+  res.status(200).json({
+    message: "Verification email sent",
+  });
+}
+
 module.exports = {
   logout,
   current,
   uploadAvatar,
+  verifyEmail,
+  repeatVerification,
 };
