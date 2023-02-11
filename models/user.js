@@ -34,6 +34,14 @@ const schema = mongoose.Schema(
       type: String,
       default: secureUrl,
     },
+    verify: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: {
+      type: String,
+      required: [true, "Verify token is required"],
+    },
   },
   {
     timestamps: true,
@@ -42,7 +50,7 @@ const schema = mongoose.Schema(
 );
 
 schema.pre("save", async function () {
-  console.log("pre save");
+  // console.log("pre save");
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(this.password, salt);
 

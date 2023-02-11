@@ -1,16 +1,26 @@
 const { User } = require("../models/user");
-const { httpError } = require("../helpers/index");
+const { httpError, sendVerificationEmail } = require("../helpers/index");
 const { Conflict } = require("http-errors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { v4 } = require("uuid");
 
 async function signup(req, res, next) {
   const { email, password } = req.body;
 
   try {
+    const verificationToken = v4();
+
     const savedUser = await User.create({
       email,
       password,
+      verificationToken,
+    });
+
+    await sendVerificationEmail({
+      to: email,
+      subject: "Please confirm your email",
+      html: `<a href="localhost:3000/api/users/verify/${verificationToken}">Confirm your email</a>`,
     });
 
     res.status(201).json({
@@ -41,6 +51,14 @@ async function login(req, res, next) {
   if (!storedUser) {
     throw new httpError(401, "Email or password is wrong");
   }
+
+  if (!storedUser.verify) {
+    throw new httpError(
+      401,
+      "Email is not verified. Please check your mail box."
+    );
+  }
+
   const isPasswordValid = await bcrypt.compare(password, storedUser.password);
 
   if (!isPasswordValid) {
